@@ -9,7 +9,7 @@ import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 
-contract KibaInu is ERC20, Ownable {
+contract XoloRocket is ERC20, Ownable {
     IUniswapV2Router02 public immutable uniswapV2Router;
     address public immutable uniswapV2Pair;
     // address that will receive the auto added LP tokens
@@ -101,7 +101,6 @@ contract KibaInu is ERC20, Ownable {
 
     constructor(address _owner, uint256 _totalSupply) ERC20("Xolo Rocket", "XL") {
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
-        _transferOwnership(_owner);
 
         excludeFromMaxTransaction(address(_uniswapV2Router), true);
         uniswapV2Router = _uniswapV2Router;
@@ -134,16 +133,16 @@ contract KibaInu is ERC20, Ownable {
         earlySellLiquidityFee = _earlySellLiquidityFee;
         earlySellMarketingFee = _earlySellMarketingFee;
 
-        marketingWallet = owner(); // set as marketing wallet
-        devWallet = owner(); // set as dev wallet
-        autoLpReceiver = owner();
+        marketingWallet = _owner; // set as marketing wallet
+        devWallet = _owner; // set as dev wallet
+        autoLpReceiver = _owner;
 
         // exclude from paying fees or having max transaction amount
-        excludeFromFees(owner(), true);
+        excludeFromFees(_owner, true);
         excludeFromFees(address(this), true);
         excludeFromFees(address(0xdead), true);
 
-        excludeFromMaxTransaction(owner(), true);
+        excludeFromMaxTransaction(_owner, true);
         excludeFromMaxTransaction(address(this), true);
         excludeFromMaxTransaction(address(0xdead), true);
 
@@ -151,7 +150,8 @@ contract KibaInu is ERC20, Ownable {
             _mint is an internal function in ERC20.sol that is only called here,
             and CANNOT be called ever again
         */
-        _mint(owner(), _totalSupply);
+        _transferOwnership(_owner);
+        _mint(_owner, _totalSupply);
     }
 
     receive() external payable {
