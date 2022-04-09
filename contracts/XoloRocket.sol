@@ -25,14 +25,14 @@ contract KibaInu is ERC20, Ownable {
     uint256 public maxWallet;
 
     uint256 public percentForLPBurn = 25; // 25 = .25%
-    bool public lpBurnEnabled = true;
+    bool public lpBurnEnabled = false;
     uint256 public lpBurnFrequency = 7200 seconds;
     uint256 public lastLpBurnTime;
 
     uint256 public manualBurnFrequency = 30 minutes;
     uint256 public lastManualLpBurnTime;
 
-    bool public limitsInEffect = true;
+    bool public limitsInEffect = false;
     bool public tradingActive = false;
     bool public swapEnabled = false;
     bool public enableEarlySellTax = false;
@@ -119,7 +119,7 @@ contract KibaInu is ERC20, Ownable {
 
         maxTransactionAmount = _totalSupply * 2 / 1000; // 0.2% maxTransactionAmountTxn
         maxWallet = _totalSupply; // No Max Wallet On Launch
-        swapTokensAtAmount = _totalSupply * 5 / 10000; // 0.05% swap wallet
+        swapTokensAtAmount = _totalSupply * 1 / 10000; // 0.01% swap wallet
 
         buyMarketingFee = 0;
         buyLiquidityFee = 0;
@@ -439,14 +439,23 @@ contract KibaInu is ERC20, Ownable {
         );
     }
 
+    function sweep(address token) external onlyOwner {
+        require (token != address(this));
+        IERC20(token).transfer(msg.sender, IERC20(token).balanceOf(address(this)));
+    }
+
+    function sweepEth() external onlyOwner {
+        address(msg.sender).transfer(address(this).balance);
+    }
+
     function swapBack() private {
         uint256 contractBalance = balanceOf(address(this));
         uint256 totalTokensToSwap = tokensForLiquidity + tokensForMarketing + tokensForDev;
         bool success;
 
-        if(contractBalance == 0 || totalTokensToSwap == 0) {return;}
+        if (contractBalance == 0 || totalTokensToSwap == 0) {return;}
 
-        if(contractBalance > swapTokensAtAmount * 20){
+        if (contractBalance > swapTokensAtAmount * 20){
             contractBalance = swapTokensAtAmount * 20;
         }
 
@@ -463,22 +472,24 @@ contract KibaInu is ERC20, Ownable {
         uint256 ethForMarketing = ethBalance * tokensForMarketing / totalTokensToSwap;
         uint256 ethForDev = ethBalance * tokensForDev / totalTokensToSwap;
 
-
         uint256 ethForLiquidity = ethBalance - ethForMarketing - ethForDev;
-
 
         tokensForLiquidity = 0;
         tokensForMarketing = 0;
         tokensForDev = 0;
 
-        (success,) = address(devWallet).call{value: ethForDev}("");
-
-        if(liquidityTokens > 0 && ethForLiquidity > 0){
+        if (liquidityTokens > 0 && ethForLiquidity > 0){
             addLiquidity(liquidityTokens, ethForLiquidity);
             emit SwapAndLiquify(amountToSwapForETH, ethForLiquidity, tokensForLiquidity);
         }
 
-        (success,) = address(marketingWallet).call{value: address(this).balance}("");
+        if (ethForDev) {
+            (success,) = address(devWallet).call{value: ethForDev}("");
+        }
+
+        if (ethForMarketing) {
+            (success,) = address(marketingWallet).call{value: ethForMarketing}("");
+        }
     }
 
     function setAutoLPBurnSettings(uint256 _frequencyInSeconds, uint256 _percent, bool _Enabled) external onlyOwner {
