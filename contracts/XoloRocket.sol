@@ -35,7 +35,7 @@ contract KibaInu is ERC20, Ownable {
     bool public limitsInEffect = true;
     bool public tradingActive = false;
     bool public swapEnabled = false;
-    bool public enableEarlySellTax = true;
+    bool public enableEarlySellTax = false;
 
     // Anti-bot and anti-whale mappings and variables
     mapping(address => uint256) private _holderLastTransferTimestamp; // to hold last Transfers temporarily during launch
@@ -99,7 +99,7 @@ contract KibaInu is ERC20, Ownable {
 
     event BoughtEarly(address indexed sniper);
 
-    constructor(address _owner, uint256 _totalSupply) ERC20("Xolo Rocket", "XL") {
+    constructor(address _owner, uint256 _totalSupply) ERC20("XL Rocket", "XL") {
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         _transferOwnership(_owner);
 
@@ -110,24 +110,20 @@ contract KibaInu is ERC20, Ownable {
         excludeFromMaxTransaction(address(uniswapV2Pair), true);
         _setAutomatedMarketMakerPair(address(uniswapV2Pair), true);
 
-        uint256 _buyMarketingFee = 5;
-        uint256 _buyLiquidityFee = 1;
-        uint256 _buyDevFee = 0;
-
-        uint256 _sellMarketingFee = 5;
-        uint256 _sellLiquidityFee = 1;
+        uint256 _sellMarketingFee = 0;
+        uint256 _sellLiquidityFee = 30;
         uint256 _sellDevFee = 0;
 
-        uint256 _earlySellLiquidityFee = 5;
-        uint256 _earlySellMarketingFee = 10;
+        uint256 _earlySellLiquidityFee = 0;
+        uint256 _earlySellMarketingFee = 0;
 
         maxTransactionAmount = _totalSupply * 2 / 1000; // 0.2% maxTransactionAmountTxn
         maxWallet = _totalSupply; // No Max Wallet On Launch
         swapTokensAtAmount = _totalSupply * 5 / 10000; // 0.05% swap wallet
 
-        buyMarketingFee = _buyMarketingFee;
-        buyLiquidityFee = _buyLiquidityFee;
-        buyDevFee = _buyDevFee;
+        buyMarketingFee = 0;
+        buyLiquidityFee = 0;
+        buyDevFee = 0;
         buyTotalFees = buyMarketingFee + buyLiquidityFee + buyDevFee;
 
         sellMarketingFee = _sellMarketingFee;
@@ -140,6 +136,7 @@ contract KibaInu is ERC20, Ownable {
 
         marketingWallet = owner(); // set as marketing wallet
         devWallet = owner(); // set as dev wallet
+        autoLpReceiver = owner();
 
         // exclude from paying fees or having max transaction amount
         excludeFromFees(owner(), true);
@@ -230,7 +227,7 @@ contract KibaInu is ERC20, Ownable {
         buyLiquidityFee = _liquidityFee;
         buyDevFee = _devFee;
         buyTotalFees = buyMarketingFee + buyLiquidityFee + buyDevFee;
-        require(buyTotalFees <= 25, "Must keep fees at 20% or less");
+        require(buyTotalFees <= 40, "Must keep fees at 40% or less");
     }
 
     function updateSellFees(uint256 _marketingFee, uint256 _liquidityFee, uint256 _devFee, uint256 _earlySellLiquidityFee, uint256 _earlySellMarketingFee) external onlyOwner {
@@ -240,7 +237,7 @@ contract KibaInu is ERC20, Ownable {
         earlySellLiquidityFee = _earlySellLiquidityFee;
         earlySellMarketingFee = _earlySellMarketingFee;
         sellTotalFees = sellMarketingFee + sellLiquidityFee + sellDevFee;
-        require(sellTotalFees <= 25, "Must keep fees at 25% or less");
+        require(sellTotalFees <= 40, "Must keep fees at 40% or less");
     }
 
     function excludeFromFees(address account, bool excluded) public onlyOwner {
