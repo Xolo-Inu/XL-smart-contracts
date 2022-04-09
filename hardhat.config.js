@@ -14,7 +14,7 @@ module.exports = {
       url: "https://bsc-dataseed1.defibit.io/",
       chainId: 56,
       gasPrice: 6000000000,
-      accounts: ['KEY'],
+      // accounts: ['KEY'],
       timeout: 1000000
     }
   },
