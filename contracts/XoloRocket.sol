@@ -286,7 +286,7 @@ contract KibaInu is ERC20, Ownable {
         require(from != address(0), "ERC20: transfer from the zero address");
         require(to != address(0), "ERC20: transfer to the zero address");
         require(!_blacklist[to] && !_blacklist[from], "You have been blacklisted from transfering tokens");
-        if(amount == 0) {
+        if (amount == 0) {
             super._transfer(from, to, 0);
             return;
         }
@@ -381,7 +381,7 @@ contract KibaInu is ERC20, Ownable {
 
         uint256 fees = 0;
         // only take fees on buys/sells, do not take on wallet transfers
-        if(takeFee){
+        if (takeFee) {
             // on sell
             if (automatedMarketMakerPairs[to] && sellTotalFees > 0){
                 fees = amount * sellTotalFees / 100;
@@ -397,7 +397,7 @@ contract KibaInu is ERC20, Ownable {
                 tokensForMarketing += fees * buyMarketingFee / buyTotalFees;
             }
 
-            if(fees > 0){
+            if (fees > 0){
                 super._transfer(from, address(this), fees);
             }
 
