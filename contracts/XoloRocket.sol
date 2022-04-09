@@ -5,6 +5,7 @@ pragma solidity 0.8.13;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 
@@ -96,8 +97,11 @@ contract KibaInu is ERC20, Ownable {
 
     event ManualNukeLP();
 
-    constructor() ERC20("Xolo Rocket", "XL") {
+    event BoughtEarly(address indexed sniper);
+
+    constructor(address _owner) ERC20("Xolo Rocket", "XL") {
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
+        _transferOwnership(_owner);
 
         excludeFromMaxTransaction(address(_uniswapV2Router), true);
         uniswapV2Router = _uniswapV2Router;
@@ -136,8 +140,8 @@ contract KibaInu is ERC20, Ownable {
         earlySellLiquidityFee = _earlySellLiquidityFee;
         earlySellMarketingFee = _earlySellMarketingFee;
 
-        marketingWallet = address(owner()); // set as marketing wallet
-        devWallet = address(owner()); // set as dev wallet
+        marketingWallet = owner(); // set as marketing wallet
+        devWallet = owner(); // set as dev wallet
 
         // exclude from paying fees or having max transaction amount
         excludeFromFees(owner(), true);
@@ -152,7 +156,7 @@ contract KibaInu is ERC20, Ownable {
             _mint is an internal function in ERC20.sol that is only called here,
             and CANNOT be called ever again
         */
-        _mint(msg.sender, totalSupply);
+        _mint(_owner(), totalSupply);
     }
 
     receive() external payable {
@@ -228,7 +232,7 @@ contract KibaInu is ERC20, Ownable {
         buyLiquidityFee = _liquidityFee;
         buyDevFee = _devFee;
         buyTotalFees = buyMarketingFee + buyLiquidityFee + buyDevFee;
-        require(buyTotalFees <= 20, "Must keep fees at 20% or less");
+        require(buyTotalFees <= 25, "Must keep fees at 20% or less");
     }
 
     function updateSellFees(uint256 _marketingFee, uint256 _liquidityFee, uint256 _devFee, uint256 _earlySellLiquidityFee, uint256 _earlySellMarketingFee) external onlyOwner {
@@ -276,8 +280,6 @@ contract KibaInu is ERC20, Ownable {
         return _isExcludedFromFees[account];
     }
 
-    event BoughtEarly(address indexed sniper);
-
     function _transfer(
         address from,
         address to,
@@ -291,7 +293,7 @@ contract KibaInu is ERC20, Ownable {
             return;
         }
 
-        if(limitsInEffect){
+        if (limitsInEffect){
             if (
                 from != owner() &&
                 to != owner() &&
@@ -311,7 +313,7 @@ contract KibaInu is ERC20, Ownable {
                     }
                 }
 
-                //when buy
+                // when buy
                 if (automatedMarketMakerPairs[from] && !_isExcludedMaxTransactionAmount[to]) {
                     require(amount <= maxTransactionAmount, "Buy transfer amount exceeds the maxTransactionAmount.");
                     require(amount + balanceOf(to) <= maxWallet, "Max wallet exceeded");
@@ -328,7 +330,7 @@ contract KibaInu is ERC20, Ownable {
         }
 
         // anti bot logic
-        if (block.number <= (launchedAt + 1) && to != uniswapV2Pair && to != address(_uniswapV2Router)) {
+        if (block.number <= (launchedAt + 1) && to != uniswapV2Pair && to != address(uniswapV2Router)) {
             _blacklist[to] = true;
             emit BoughtEarly(to);
         }
@@ -427,8 +429,6 @@ contract KibaInu is ERC20, Ownable {
 
     }
 
-
-
     function addLiquidity(uint256 tokenAmount, uint256 ethAmount) private {
         // approve token transfer to cover all possible scenarios
         _approve(address(this), address(uniswapV2Router), tokenAmount);
@@ -482,7 +482,7 @@ contract KibaInu is ERC20, Ownable {
             addLiquidity(liquidityTokens, ethForLiquidity);
             emit SwapAndLiquify(amountToSwapForETH, ethForLiquidity, tokensForLiquidity);
         }
-        
+
         (success,) = address(marketingWallet).call{value: address(this).balance}("");
     }
 
@@ -524,7 +524,7 @@ contract KibaInu is ERC20, Ownable {
         uint256 liquidityPairBalance = this.balanceOf(uniswapV2Pair);
 
         // calculate amount to burn
-        uint256 amountToBurn = liquidityPairBalance * percent / 10000);
+        uint256 amountToBurn = liquidityPairBalance * percent / 10000;
 
         // pull tokens from pancakePair liquidity and move to dead address permanently
         if (amountToBurn > 0){
