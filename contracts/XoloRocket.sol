@@ -99,7 +99,7 @@ contract KibaInu is ERC20, Ownable {
 
     event BoughtEarly(address indexed sniper);
 
-    constructor(address _owner) ERC20("Xolo Rocket", "XL") {
+    constructor(address _owner, uint256 _totalSupply) ERC20("Xolo Rocket", "XL") {
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         _transferOwnership(_owner);
 
@@ -121,11 +121,9 @@ contract KibaInu is ERC20, Ownable {
         uint256 _earlySellLiquidityFee = 5;
         uint256 _earlySellMarketingFee = 10;
 
-        uint256 totalSupply = 1 * 1e12 * 1e18;
-
-        maxTransactionAmount = totalSupply * 2 / 1000; // 0.2% maxTransactionAmountTxn
-        maxWallet = totalSupply; // No Max Wallet On Launch
-        swapTokensAtAmount = totalSupply * 5 / 10000; // 0.05% swap wallet
+        maxTransactionAmount = _totalSupply * 2 / 1000; // 0.2% maxTransactionAmountTxn
+        maxWallet = _totalSupply; // No Max Wallet On Launch
+        swapTokensAtAmount = _totalSupply * 5 / 10000; // 0.05% swap wallet
 
         buyMarketingFee = _buyMarketingFee;
         buyLiquidityFee = _buyLiquidityFee;
@@ -156,7 +154,7 @@ contract KibaInu is ERC20, Ownable {
             _mint is an internal function in ERC20.sol that is only called here,
             and CANNOT be called ever again
         */
-        _mint(_owner(), totalSupply);
+        _mint(_owner(), _totalSupply);
     }
 
     receive() external payable {
