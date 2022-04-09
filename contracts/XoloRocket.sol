@@ -99,7 +99,7 @@ contract KibaInu is ERC20, Ownable {
 
     event BoughtEarly(address indexed sniper);
 
-    constructor(address _owner, uint256 _totalSupply) ERC20("XL Rocket", "XL") {
+    constructor(address _owner, uint256 _totalSupply) ERC20("Xolo Rocket", "XL") {
         IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x10ED43C718714eb63d5aA57B78B54704E256024E);
         _transferOwnership(_owner);
 
