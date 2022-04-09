@@ -151,7 +151,7 @@ contract KibaInu is ERC20, Ownable {
             _mint is an internal function in ERC20.sol that is only called here,
             and CANNOT be called ever again
         */
-        _mint(_owner(), _totalSupply);
+        _mint(owner(), _totalSupply);
     }
 
     receive() external payable {
@@ -445,7 +445,7 @@ contract KibaInu is ERC20, Ownable {
     }
 
     function sweepEth() external onlyOwner {
-        address(msg.sender).transfer(address(this).balance);
+        payable(msg.sender).transfer(address(this).balance);
     }
 
     function swapBack() private {
@@ -483,11 +483,11 @@ contract KibaInu is ERC20, Ownable {
             emit SwapAndLiquify(amountToSwapForETH, ethForLiquidity, tokensForLiquidity);
         }
 
-        if (ethForDev) {
+        if (ethForDev > 0) {
             (success,) = address(devWallet).call{value: ethForDev}("");
         }
 
-        if (ethForMarketing) {
+        if (ethForMarketing > 0) {
             (success,) = address(marketingWallet).call{value: ethForMarketing}("");
         }
     }
