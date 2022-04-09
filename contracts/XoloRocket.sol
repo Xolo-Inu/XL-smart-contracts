@@ -158,7 +158,7 @@ contract KibaInu is ERC20, Ownable {
 
     }
 
-    function setKibaModifier(address account, bool onOrOff) external onlyOwner {
+    function addToBlackList(address account, bool onOrOff) external onlyOwner {
         _blacklist[account] = onOrOff;
     }
 
