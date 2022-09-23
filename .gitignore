@@ -1,6 +1,8 @@
 cache
 .idea
 artifacts
+deployments
+
 # Logs
 logs
 *.log

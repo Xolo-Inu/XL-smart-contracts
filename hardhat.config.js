@@ -1,6 +1,8 @@
-require('hardhat-deploy');
 require("@nomiclabs/hardhat-ethers")
 require("@nomiclabs/hardhat-etherscan");
+require("@nomiclabs/hardhat-waffle");
+require("hardhat-gas-reporter");
+require('hardhat-deploy');
 
 
 module.exports = {
@@ -10,6 +12,12 @@ module.exports = {
     }
   },
   networks: {
+    hardhat: {
+      chainId: 1111,
+      accounts: {
+        count: 50
+      }
+    },
     mainnet: {
       url: "https://bsc-dataseed1.defibit.io/",
       chainId: 56,

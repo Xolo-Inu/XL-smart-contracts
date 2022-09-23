@@ -6,26 +6,28 @@
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers@^0.3.0-beta.13",
     "@nomiclabs/hardhat-etherscan": "^2.1.8",
-    "@openzeppelin/contracts": "^4.5.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^4.7.3",
+    "@openzeppelin/contracts-upgradeable": "^4.7.3",
     "@openzeppelin/test-helpers": "^0.5.6",
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
-    "ethers": "^5.6.2",
     "hardhat": "^2.9.3",
-    "hardhat-deploy": "^0.11.4"
+    "ethers": "^5.7.1",
+    "hardhat-deploy": "^0.11.4",
+    "hardhat-gas-reporter": "^1.0.8"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "mocha"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/30mb1/XL-smart-contracts.git"
+    "url": "git+https://github.com/Xolo-Inu/XL-smart-contracts.git"
   },
   "author": "30mb1 <steam.30mb1@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/30mb1/XL-smart-contracts/issues"
+    "url": "https://github.com/Xolo-Inu/XL-smart-contracts.git/issues"
   },
-  "homepage": "https://github.com/30mb1/XL-smart-contracts#readme"
+  "homepage": "https://github.com/Xolo-Inu/XL-smart-contracts.git#readme"
 }
