@@ -5,22 +5,20 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
-import "./CampaignFactory.sol";
+import "./interfaces/ICampaign.sol";
+import "./interfaces/ICampaignFactory.sol";
 
 
-contract Campaign is Ownable, Initializable {
-    enum UnsoldTokensAction { burn, reserve }
-    enum Dex { pancake, sushi, uni }
-
+contract Campaign is ICampaign, Ownable, Initializable {
     event TokensReserve(address indexed user, uint256 bnb_val, uint256 tokens_amount);
     event TokensRealized(address indexed user, uint256 tokens_amount);
     event Refund(address indexed user, uint256 bnb_val, uint256 tokens_amount);
+    event Reset();
     event FeeTaken(uint256 bnb_amount);
     event LiquidityAdded(uint256 bnb_amount, uint256 token_amount, uint256 lp_tokens, uint32 lock_until);
     event LiquidityReleased();
@@ -30,26 +28,10 @@ contract Campaign is Ownable, Initializable {
 
     using SafeERC20 for IERC20;
 
-    struct Config {
-        IERC20 token;
-        uint32 start;
-        uint32 end;
-        uint256 presaleTokens;
-        uint256 liquidityTokens;
-        uint256 minPurchaseTokens;
-        uint256 maxPurchaseTokens;
-        uint256 softCap;
-        uint256 tokensPerBnb;
-        Campaign.Dex dex;
-        Campaign.UnsoldTokensAction action;
-        uint16 liquidityPercent;
-        uint32 liquidityLockupPeriod;
-    }
-
     uint16 constant MAX_PERCENT = 10000;
     uint16 public fee;
     Config public config;
-    CampaignFactory public factory;
+    ICampaignFactory public factory;
     IUniswapV2Router02 public router;
     bool public reseted;
     uint256 public raised;
@@ -62,7 +44,7 @@ contract Campaign is Ownable, Initializable {
     function initialize(address _owner, uint16 _fee, address _router, Config calldata _config) external initializer {
         _transferOwnership(_owner);
         fee = _fee;
-        factory = CampaignFactory(msg.sender);
+        factory = ICampaignFactory(msg.sender);
         config = _config;
         router = IUniswapV2Router02(_router);
     }
@@ -94,6 +76,9 @@ contract Campaign is Ownable, Initializable {
         if (token_balance > 0) {
             config.token.safeTransfer(owner(), token_balance);
         }
+
+        reseted = true;
+        emit Reset();
     }
 
     function calculateTokens(uint256 bnb_value) public view returns (uint256 _tokens_to_buy, uint256 _refund_val, uint256 _buy_val) {

@@ -5,18 +5,18 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./Campaign.sol";
+import "./interfaces/ICampaign.sol";
 
 
 contract CampaignFactory is OwnableUpgradeable {
     event CampaignImplementationUpdated(address newImplementation);
     event FeeUpdated(uint16 new_fee);
-    event RouterUpdated(Campaign.Dex dex, address new_router);
+    event RouterUpdated(ICampaign.Dex dex, address new_router);
     event NewCampaign(uint256 indexed id, address indexed creator, address indexed campaign);
 
     address public campaignImplementation;
     mapping (uint256 => address) public campaigns;
-    mapping (Campaign.Dex => address) public routers;
+    mapping (ICampaign.Dex => address) public routers;
     uint16 constant MAX_PERCENT = 10000;
     uint16 public fee = 500; // 5%, 10000 = 100%
 
@@ -41,7 +41,7 @@ contract CampaignFactory is OwnableUpgradeable {
         emit FeeUpdated(new_fee);
     }
 
-    function setRouter(Campaign.Dex dex, address new_router) external onlyOwner {
+    function setRouter(ICampaign.Dex dex, address new_router) external onlyOwner {
         routers[dex] = new_router;
         emit RouterUpdated(dex, new_router);
     }
@@ -54,12 +54,12 @@ contract CampaignFactory is OwnableUpgradeable {
         for (uint i = 0; i < ids.length; i++) {
             _campaigns[i] = campaigns[ids[i]];
             if (_campaigns[i] != address(0)) {
-                _raised[i] = Campaign(_campaigns[i]).raised();
+                _raised[i] = ICampaign(_campaigns[i]).raised();
             }
         }
     }
 
-    function _initCampaign(uint256 id, address _owner, Campaign.Config calldata config) internal {
+    function _initCampaign(uint256 id, address _owner, ICampaign.Config calldata config) internal {
         require (campaigns[id] == address(0), "CampaignFactory::createCampaign: id is already used");
         require (config.start > block.timestamp, "CampaignFactory::createCampaign: start should be in future");
         require (config.start < config.end, "CampaignFactory::createCampaign: start stime should be less than end time");
@@ -67,22 +67,22 @@ contract CampaignFactory is OwnableUpgradeable {
         require (config.liquidityTokens > 0 && config.presaleTokens > 0, "CampaignFactory::createCampaign: token amounts should be positive");
         require (config.tokensPerBnb > 0, "CampaignFactory::createCampaign: rate should be positive");
         require (config.liquidityPercent < MAX_PERCENT, "CampaignFactory::createCampaign: liquidityPercent should be less than 10000");
-        require (config.softCap < (config.presaleTokens / config.tokensPerBnb) * 10**9, "CampaignFactory::createCampaign: softCap should be less then hardCap");
+        require (config.softCap < (config.presaleTokens * 10**9) / config.tokensPerBnb, "CampaignFactory::createCampaign: softCap should be less then hardCap");
         require (routers[config.dex] != address(0), "CampaignFactory::createCampaign: router not set for dex");
 
         address new_campaign = ClonesUpgradeable.clone(campaignImplementation);
-        Campaign(new_campaign).initialize(_owner, fee, routers[config.dex], config);
+        ICampaign(new_campaign).initialize(_owner, fee, routers[config.dex], config);
 
         campaigns[id] = new_campaign;
 
         emit NewCampaign(id, _owner, new_campaign);
     }
 
-    function createCampaign(uint256 id, Campaign.Config calldata config) external {
+    function createCampaign(uint256 id, ICampaign.Config calldata config) external {
         _initCampaign(id, msg.sender, config);
     }
 
-    function createCampaignWithOwner(uint256 id, address _owner, Campaign.Config calldata config) external onlyOwner {
+    function createCampaignWithOwner(uint256 id, address _owner, ICampaign.Config calldata config) external onlyOwner {
         _initCampaign(id, _owner, config);
     }
 }
