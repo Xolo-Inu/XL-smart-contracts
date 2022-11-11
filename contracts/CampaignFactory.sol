@@ -6,9 +6,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/ICampaign.sol";
+import "./interfaces/ICampaignFactory.sol";
 
 
-contract CampaignFactory is OwnableUpgradeable {
+contract CampaignFactory is OwnableUpgradeable, ICampaignFactory {
     event CampaignImplementationUpdated(address newImplementation);
     event FeeUpdated(uint16 new_fee);
     event RouterUpdated(ICampaign.Dex dex, address new_router);

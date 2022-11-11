@@ -93,7 +93,7 @@ contract Campaign is ICampaign, Ownable, Initializable {
 
     function buyTokens() external payable presaleLive {
         require (raised < hardCap(), "Campaign::buyTokens: hardCap reached");
-        require (msg.value < 0, "Campaign::buyTokens: zero msg.value");
+        require (msg.value > 0, "Campaign::buyTokens: zero msg.value");
 
         uint256 token_balance = config.token.balanceOf(address(this));
         require (token_balance >= config.presaleTokens + config.liquidityTokens, "Campaign::buyTokens: tokens not provided");

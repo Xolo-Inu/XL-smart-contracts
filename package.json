@@ -15,7 +15,8 @@
     "hardhat": "^2.9.3",
     "ethers": "^5.7.1",
     "hardhat-deploy": "^0.11.4",
-    "hardhat-gas-reporter": "^1.0.8"
+    "hardhat-gas-reporter": "^1.0.8",
+    "chai": "^4.3.4"
   },
   "scripts": {
     "test": "mocha"
