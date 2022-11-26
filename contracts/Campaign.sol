@@ -130,6 +130,7 @@ contract Campaign is ICampaign, Ownable, Initializable {
         require (reserved > 0, "Campaign::getReservedTokens: user has no reserved tokens");
 
         delete reserved_tokens[msg.sender];
+        delete reserved_bnbs[msg.sender];
         config.token.safeTransfer(msg.sender, reserved);
 
         emit TokensRealized(msg.sender, reserved);
@@ -137,6 +138,7 @@ contract Campaign is ICampaign, Ownable, Initializable {
 
     function refund() external presaleEnded {
         require (raised < config.softCap, "Campaign::refund: softCap reached");
+        require (reserved_bnbs[msg.sender] > 0, "Campaign::refund: no reserved BNBs");
 
         uint256 tokens = reserved_tokens[msg.sender];
         uint256 refund_val = reserved_bnbs[msg.sender];
