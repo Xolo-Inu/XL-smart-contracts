@@ -13,8 +13,8 @@ interface ICampaign {
         uint32 end;
         uint256 presaleTokens;
         uint256 liquidityTokens;
-        uint256 minPurchaseTokens;
-        uint256 maxPurchaseTokens;
+        uint256 minPurchaseBnb;
+        uint256 maxPurchaseBnb;
         uint256 softCap;
         uint256 tokensPerBnb;
         Dex dex;

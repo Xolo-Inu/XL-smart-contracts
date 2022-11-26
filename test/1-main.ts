@@ -1,7 +1,7 @@
 import {Campaign, CampaignFactory, MockERC20, MockUniRouter} from "../typechain-types";
 import {Contract, Signer} from "ethers";
 import {deployments} from "hardhat";
-import {min} from "hardhat/internal/util/bigint";
+import {max, min} from "hardhat/internal/util/bigint";
 
 const chai = require("chai");
 const { ethers } = require("hardhat");
@@ -55,10 +55,10 @@ describe('Xolo launchpad tests', async function() {
             const block = await ethers.provider.getBlock();
             presale_tokens = 800000;
             liq_tokens = 2000000;
-            min_purchase = 1000;
+            min_purchase = bnb;
             softcap = 200 * bnb;
-            rate = 2000;
-            max_purchase = rate * 200;
+            rate = 2000; // tokens per bnb
+            max_purchase = softcap;
             liq_percent = 8000;
             lockup = 100 * 24 * 3600;
             hardcap = presale_tokens / rate; // 400 bnb
@@ -71,8 +71,8 @@ describe('Xolo launchpad tests', async function() {
                     end: block.timestamp + 24 * 3600 * 2, // 2 days after
                     presaleTokens: presale_tokens,
                     liquidityTokens: liq_tokens,
-                    minPurchaseTokens: min_purchase,
-                    maxPurchaseTokens: max_purchase,
+                    minPurchaseBnb: min_purchase,
+                    maxPurchaseBnb: max_purchase,
                     softCap: softcap,
                     tokensPerBnb: rate,
                     dex: 0,
@@ -132,13 +132,11 @@ describe('Xolo launchpad tests', async function() {
 
             await ethers.provider.send("evm_increaseTime", [24 * 3600 + 1]);
 
-            const min_value = (min_purchase / rate) * bnb - 1;
-            await expect(campaign.connect(bob).buyTokens({value: min_value})).to.be.revertedWith(
+            await expect(campaign.connect(bob).buyTokens({value: min_purchase - 1})).to.be.revertedWith(
                 "Campaign::buyTokens: too low/high purchase amount"
             );
 
-            const max_value = (max_purchase / rate) * bnb + bnb;
-            await expect(campaign.connect(bob).buyTokens({value: max_value})).to.be.revertedWith(
+            await expect(campaign.connect(bob).buyTokens({value: max_purchase + 1})).to.be.revertedWith(
                 "Campaign::buyTokens: too low/high purchase amount"
             );
         });
@@ -291,10 +289,10 @@ describe('Xolo launchpad tests', async function() {
             const block = await ethers.provider.getBlock();
             presale_tokens = 800000;
             liq_tokens = 2000000;
-            min_purchase = 1000;
+            min_purchase = bnb;
             softcap = 200 * bnb;
             rate = 2000;
-            max_purchase = rate * 200;
+            max_purchase = softcap;
             liq_percent = 8000;
             lockup = 100 * 24 * 3600;
             hardcap = presale_tokens / rate; // 500 bnb
@@ -307,8 +305,8 @@ describe('Xolo launchpad tests', async function() {
                     end: block.timestamp + 24 * 3600 * 2, // 2 days after
                     presaleTokens: presale_tokens,
                     liquidityTokens: liq_tokens,
-                    minPurchaseTokens: min_purchase,
-                    maxPurchaseTokens: max_purchase,
+                    minPurchaseBnb: min_purchase,
+                    maxPurchaseBnb: max_purchase,
                     softCap: softcap,
                     tokensPerBnb: rate,
                     dex: 1,

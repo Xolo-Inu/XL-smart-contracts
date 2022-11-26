@@ -12,7 +12,6 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 import "./interfaces/ICampaign.sol";
 import "./interfaces/ICampaignFactory.sol";
-import "hardhat/console.sol";
 
 
 contract Campaign is ICampaign, Ownable, Initializable {
@@ -105,9 +104,9 @@ contract Campaign is ICampaign, Ownable, Initializable {
             payable(msg.sender).transfer(refund_val);
         }
 
-        uint256 total_purchased = reserved_tokens[msg.sender] + tokens_to_buy;
+        uint256 total_spent = reserved_bnbs[msg.sender] + buy_val;
         require (
-            total_purchased >= config.minPurchaseTokens && total_purchased <= config.maxPurchaseTokens,
+            total_spent >= config.minPurchaseBnb && total_spent <= config.maxPurchaseBnb,
             "Campaign::buyTokens: too low/high purchase amount"
         );
 

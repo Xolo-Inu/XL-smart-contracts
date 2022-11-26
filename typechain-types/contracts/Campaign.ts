@@ -35,8 +35,8 @@ export declare namespace ICampaign {
     end: PromiseOrValue<BigNumberish>;
     presaleTokens: PromiseOrValue<BigNumberish>;
     liquidityTokens: PromiseOrValue<BigNumberish>;
-    minPurchaseTokens: PromiseOrValue<BigNumberish>;
-    maxPurchaseTokens: PromiseOrValue<BigNumberish>;
+    minPurchaseBnb: PromiseOrValue<BigNumberish>;
+    maxPurchaseBnb: PromiseOrValue<BigNumberish>;
     softCap: PromiseOrValue<BigNumberish>;
     tokensPerBnb: PromiseOrValue<BigNumberish>;
     dex: PromiseOrValue<BigNumberish>;
@@ -65,8 +65,8 @@ export declare namespace ICampaign {
     end: number;
     presaleTokens: BigNumber;
     liquidityTokens: BigNumber;
-    minPurchaseTokens: BigNumber;
-    maxPurchaseTokens: BigNumber;
+    minPurchaseBnb: BigNumber;
+    maxPurchaseBnb: BigNumber;
     softCap: BigNumber;
     tokensPerBnb: BigNumber;
     dex: number;
@@ -447,8 +447,8 @@ export interface Campaign extends BaseContract {
         end: number;
         presaleTokens: BigNumber;
         liquidityTokens: BigNumber;
-        minPurchaseTokens: BigNumber;
-        maxPurchaseTokens: BigNumber;
+        minPurchaseBnb: BigNumber;
+        maxPurchaseBnb: BigNumber;
         softCap: BigNumber;
         tokensPerBnb: BigNumber;
         dex: number;
@@ -576,8 +576,8 @@ export interface Campaign extends BaseContract {
       end: number;
       presaleTokens: BigNumber;
       liquidityTokens: BigNumber;
-      minPurchaseTokens: BigNumber;
-      maxPurchaseTokens: BigNumber;
+      minPurchaseBnb: BigNumber;
+      maxPurchaseBnb: BigNumber;
       softCap: BigNumber;
       tokensPerBnb: BigNumber;
       dex: number;
@@ -703,8 +703,8 @@ export interface Campaign extends BaseContract {
         end: number;
         presaleTokens: BigNumber;
         liquidityTokens: BigNumber;
-        minPurchaseTokens: BigNumber;
-        maxPurchaseTokens: BigNumber;
+        minPurchaseBnb: BigNumber;
+        maxPurchaseBnb: BigNumber;
         softCap: BigNumber;
         tokensPerBnb: BigNumber;
         dex: number;

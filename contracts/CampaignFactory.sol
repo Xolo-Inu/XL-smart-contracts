@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/ICampaign.sol";
 import "./interfaces/ICampaignFactory.sol";
-import "hardhat/console.sol";
 
 
 contract CampaignFactory is OwnableUpgradeable {
@@ -70,7 +69,7 @@ contract CampaignFactory is OwnableUpgradeable {
         require (campaigns[id] == address(0), "CampaignFactory::createCampaign: id is already used");
         require (config.start > block.timestamp, "CampaignFactory::createCampaign: start should be in future");
         require (config.start < config.end, "CampaignFactory::createCampaign: start stime should be less than end time");
-        require (config.minPurchaseTokens < config.maxPurchaseTokens, "CampaignFactory::createCampaign: minPurchase should be less than maxPurchase");
+        require (config.minPurchaseBnb < config.maxPurchaseBnb, "CampaignFactory::createCampaign: minPurchase should be less than maxPurchase");
         require (config.liquidityTokens > 0 && config.presaleTokens > 0, "CampaignFactory::createCampaign: token amounts should be positive");
         require (config.tokensPerBnb > 0, "CampaignFactory::createCampaign: rate should be positive");
         require (config.liquidityPercent < MAX_PERCENT, "CampaignFactory::createCampaign: liquidityPercent should be less than 10000");
