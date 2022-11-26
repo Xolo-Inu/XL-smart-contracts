@@ -1,5 +1,5 @@
 import {Campaign, CampaignFactory, MockERC20, MockUniRouter} from "../typechain-types";
-import {Contract, Signer} from "ethers";
+import {BigNumber, Contract, Signer} from "ethers";
 import {deployments} from "hardhat";
 import {max, min} from "hardhat/internal/util/bigint";
 
@@ -17,7 +17,7 @@ describe('Xolo launchpad tests', async function() {
     let mock_uni: MockUniRouter;
     let admin: Signer;
     let alice: Signer, bob: Signer, carol: Signer, anne: Signer;
-    const bnb = 10**9;
+    const bnb = BigNumber.from(10).pow(18);
 
     it('Setup', async function() {
         await deployments.fixture(['campaign', 'factory', 'mock_uni']);
@@ -46,8 +46,8 @@ describe('Xolo launchpad tests', async function() {
     });
 
     describe('Campaign 1 - pancake, burn unsold', async function() {
-        let presale_tokens: number, liq_tokens: number, min_purchase: number, max_purchase: number,
-            softcap: number, rate:number, liq_percent: number, lockup: number, hardcap: number;
+        let presale_tokens: number, liq_tokens: number, min_purchase: BigNumber, max_purchase: BigNumber,
+            softcap: BigNumber, rate:number, liq_percent: number, lockup: number, hardcap: number;
 
         let campaign: Campaign;
 
@@ -56,7 +56,7 @@ describe('Xolo launchpad tests', async function() {
             presale_tokens = 800000;
             liq_tokens = 2000000;
             min_purchase = bnb;
-            softcap = 200 * bnb;
+            softcap = bnb.mul(200);
             rate = 2000; // tokens per bnb
             max_purchase = softcap;
             liq_percent = 8000;
@@ -69,15 +69,15 @@ describe('Xolo launchpad tests', async function() {
                     token: token.address,
                     start: block.timestamp + 24 * 3600, // 1 day after
                     end: block.timestamp + 24 * 3600 * 2, // 2 days after
-                    presaleTokens: presale_tokens,
-                    liquidityTokens: liq_tokens,
-                    minPurchaseBnb: min_purchase,
-                    maxPurchaseBnb: max_purchase,
-                    softCap: softcap,
-                    tokensPerBnb: rate,
+                    presaleTokens: presale_tokens.toString(),
+                    liquidityTokens: liq_tokens.toString(),
+                    minPurchaseBnb: min_purchase.toString(),
+                    maxPurchaseBnb: max_purchase.toString(),
+                    softCap: softcap.toString(),
+                    tokensPerBnb: rate.toString(),
                     dex: 0,
                     action: 0,
-                    liquidityPercent: liq_percent,
+                    liquidityPercent: liq_percent.toString(),
                     liquidityLockupPeriod: lockup
                 }
             );
@@ -132,11 +132,11 @@ describe('Xolo launchpad tests', async function() {
 
             await ethers.provider.send("evm_increaseTime", [24 * 3600 + 1]);
 
-            await expect(campaign.connect(bob).buyTokens({value: min_purchase - 1})).to.be.revertedWith(
+            await expect(campaign.connect(bob).buyTokens({value: min_purchase.sub(1).toString()})).to.be.revertedWith(
                 "Campaign::buyTokens: too low/high purchase amount"
             );
 
-            await expect(campaign.connect(bob).buyTokens({value: max_purchase + 1})).to.be.revertedWith(
+            await expect(campaign.connect(bob).buyTokens({value: max_purchase.add(1).toString()})).to.be.revertedWith(
                 "Campaign::buyTokens: too low/high purchase amount"
             );
         });
@@ -159,19 +159,19 @@ describe('Xolo launchpad tests', async function() {
             }
 
             {
-                await campaign.connect(bob).buyTokens({value: bnb / 2});
-                const expected_buy = await campaign.calculateTokens(bnb * 1.5);
+                await campaign.connect(bob).buyTokens({value: bnb.div(2).toString()});
+                const expected_buy = await campaign.calculateTokens(bnb.mul(3).div(2).toString());
 
                 const reserved_tokens = await campaign.reserved_tokens(bob.getAddress());
                 expect(reserved_tokens.toString()).to.be.eq((rate * 1.5).toString());
                 expect(expected_buy._tokens_to_buy.toString()).to.be.eq((rate * 1.5).toString());
-                expect(expected_buy._buy_val.toString()).to.be.eq((bnb * 1.5).toString());
+                expect(expected_buy._buy_val.toString()).to.be.eq(bnb.mul(3).div(2).toString());
 
                 const reserved_bnb = await campaign.reserved_bnbs(bob.getAddress());
-                expect(reserved_bnb.toString()).to.be.eq((bnb * 1.5).toString());
+                expect(reserved_bnb.toString()).to.be.eq(bnb.mul(3).div(2).toString());
 
                 const raised = await campaign.raised();
-                expect(raised).to.be.eq((bnb * 1.5).toString());
+                expect(raised).to.be.eq(bnb.mul(3).div(2).toString());
             }
         });
 
@@ -280,8 +280,8 @@ describe('Xolo launchpad tests', async function() {
     });
 
     describe('Campaign 2, sushi, reserve unsold', async function() {
-        let presale_tokens: number, liq_tokens: number, min_purchase: number, max_purchase: number,
-            softcap: number, rate:number, liq_percent: number, lockup: number, hardcap: number;
+        let presale_tokens: number, liq_tokens: number, min_purchase: BigNumber, max_purchase: BigNumber,
+            softcap: BigNumber, rate:number, liq_percent: number, lockup: number, hardcap: number;
 
         let campaign: Campaign;
 
@@ -290,12 +290,12 @@ describe('Xolo launchpad tests', async function() {
             presale_tokens = 800000;
             liq_tokens = 2000000;
             min_purchase = bnb;
-            softcap = 200 * bnb;
-            rate = 2000;
+            softcap = bnb.mul(200);
+            rate = 2000; // tokens per bnb
             max_purchase = softcap;
             liq_percent = 8000;
             lockup = 100 * 24 * 3600;
-            hardcap = presale_tokens / rate; // 500 bnb
+            hardcap = presale_tokens / rate; // 400 bnb
 
             await factory.connect(alice).createCampaign(
                 2,
@@ -303,15 +303,15 @@ describe('Xolo launchpad tests', async function() {
                     token: token.address,
                     start: block.timestamp + 24 * 3600, // 1 day after
                     end: block.timestamp + 24 * 3600 * 2, // 2 days after
-                    presaleTokens: presale_tokens,
-                    liquidityTokens: liq_tokens,
-                    minPurchaseBnb: min_purchase,
-                    maxPurchaseBnb: max_purchase,
-                    softCap: softcap,
-                    tokensPerBnb: rate,
+                    presaleTokens: presale_tokens.toString(),
+                    liquidityTokens: liq_tokens.toString(),
+                    minPurchaseBnb: min_purchase.toString(),
+                    maxPurchaseBnb: max_purchase.toString(),
+                    softCap: softcap.toString(),
+                    tokensPerBnb: rate.toString(),
                     dex: 1,
                     action: 1,
-                    liquidityPercent: liq_percent,
+                    liquidityPercent: liq_percent.toString(),
                     liquidityLockupPeriod: lockup
                 }
             );

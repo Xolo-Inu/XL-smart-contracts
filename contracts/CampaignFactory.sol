@@ -73,7 +73,7 @@ contract CampaignFactory is OwnableUpgradeable {
         require (config.liquidityTokens > 0 && config.presaleTokens > 0, "CampaignFactory::createCampaign: token amounts should be positive");
         require (config.tokensPerBnb > 0, "CampaignFactory::createCampaign: rate should be positive");
         require (config.liquidityPercent < MAX_PERCENT, "CampaignFactory::createCampaign: liquidityPercent should be less than 10000");
-        require (config.softCap < (config.presaleTokens * 10**9) / config.tokensPerBnb, "CampaignFactory::createCampaign: softCap should be less then hardCap");
+        require (config.softCap < (config.presaleTokens * 10**18) / config.tokensPerBnb, "CampaignFactory::createCampaign: softCap should be less then hardCap");
         require (routers[config.dex] != address(0), "CampaignFactory::createCampaign: router not set for dex");
 
         address new_campaign = ClonesUpgradeable.clone(campaignImplementation);

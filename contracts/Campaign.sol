@@ -66,7 +66,7 @@ contract Campaign is ICampaign, Ownable, Initializable {
     }
 
     function hardCap() public view returns (uint256) {
-        return (config.presaleTokens * 10**9) / config.tokensPerBnb;
+        return (config.presaleTokens * 10**18) / config.tokensPerBnb;
     }
 
     function reset() external onlyFactoryOwner {
@@ -89,7 +89,7 @@ contract Campaign is ICampaign, Ownable, Initializable {
             _refund_val = _buy_val - max_allowed_val;
             _buy_val = max_allowed_val;
         }
-        _tokens_to_buy = _buy_val * config.tokensPerBnb / 10**9;
+        _tokens_to_buy = _buy_val * config.tokensPerBnb / 10**18;
     }
 
     function buyTokens() external payable presaleLive {
