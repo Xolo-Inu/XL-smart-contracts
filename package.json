@@ -12,11 +12,11 @@
     "@openzeppelin/test-helpers": "^0.5.6",
     "@uniswap/v2-core": "^1.0.1",
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
-    "hardhat": "^2.9.3",
     "ethers": "^5.7.1",
+    "hardhat": "^2.9.3",
     "hardhat-deploy": "^0.11.4",
     "hardhat-gas-reporter": "^1.0.8",
-    "chai": "^4.3.4"
+    "ts-generator": "^0.1.1"
   },
   "scripts": {
     "test": "mocha"
@@ -30,5 +30,15 @@
   "bugs": {
     "url": "https://github.com/Xolo-Inu/XL-smart-contracts.git/issues"
   },
-  "homepage": "https://github.com/Xolo-Inu/XL-smart-contracts.git#readme"
+  "homepage": "https://github.com/Xolo-Inu/XL-smart-contracts.git#readme",
+  "devDependencies": {
+    "@typechain/ethers-v5": "^10.1.1",
+    "@typechain/hardhat": "^6.1.4",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.9",
+    "chai": "^4.3.7",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.1.1"
+  }
 }

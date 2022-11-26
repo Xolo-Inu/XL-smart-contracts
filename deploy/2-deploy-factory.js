@@ -13,7 +13,8 @@ module.exports = async ({getNamedAccounts, deployments}) => {
                 methodName: 'initialize',
                 args: [
                     deployer,
-                    campaign.address
+                    campaign.address,
+                    500
                 ],
             }
         }

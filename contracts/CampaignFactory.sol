@@ -7,9 +7,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/ICampaign.sol";
 import "./interfaces/ICampaignFactory.sol";
+import "hardhat/console.sol";
 
 
-contract CampaignFactory is OwnableUpgradeable, ICampaignFactory {
+contract CampaignFactory is OwnableUpgradeable {
     event CampaignImplementationUpdated(address newImplementation);
     event FeeUpdated(uint16 new_fee);
     event RouterUpdated(ICampaign.Dex dex, address new_router);
@@ -19,11 +20,12 @@ contract CampaignFactory is OwnableUpgradeable, ICampaignFactory {
     mapping (uint256 => address) public campaigns;
     mapping (ICampaign.Dex => address) public routers;
     uint16 constant MAX_PERCENT = 10000;
-    uint16 public fee = 500; // 5%, 10000 = 100%
+    uint16 public fee; // 5%, 10000 = 100%
 
-    function initialize(address _owner, address _campaignImplementation) external initializer {
+    function initialize(address _owner, address _campaignImplementation, uint16 _fee) external initializer {
         _transferOwnership(_owner);
         _updateCampaignImplementation(_campaignImplementation);
+        fee = _fee;
     }
 
     function updateCampaignImplementation(address newImplementation) external onlyOwner {
@@ -33,6 +35,10 @@ contract CampaignFactory is OwnableUpgradeable, ICampaignFactory {
     function _updateCampaignImplementation(address newImplementation) internal {
         campaignImplementation = newImplementation;
         emit CampaignImplementationUpdated(newImplementation);
+    }
+
+    function withdraw() external onlyOwner {
+        payable(msg.sender).transfer(address(this).balance);
     }
 
     function setFee(uint16 new_fee) external onlyOwner {
@@ -86,4 +92,6 @@ contract CampaignFactory is OwnableUpgradeable, ICampaignFactory {
     function createCampaignWithOwner(uint256 id, address _owner, ICampaign.Config calldata config) external onlyOwner {
         _initCampaign(id, _owner, config);
     }
+
+    receive() external payable {}
 }

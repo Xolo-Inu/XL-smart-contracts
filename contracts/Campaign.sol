@@ -12,6 +12,7 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 import "./interfaces/ICampaign.sol";
 import "./interfaces/ICampaignFactory.sol";
+import "hardhat/console.sol";
 
 
 contract Campaign is ICampaign, Ownable, Initializable {
@@ -34,6 +35,7 @@ contract Campaign is ICampaign, Ownable, Initializable {
     ICampaignFactory public factory;
     IUniswapV2Router02 public router;
     bool public reseted;
+    bool public finished;
     uint256 public raised;
     mapping (address => uint256) public reserved_tokens;
     mapping (address => uint256) public reserved_bnbs;
@@ -55,7 +57,7 @@ contract Campaign is ICampaign, Ownable, Initializable {
     }
 
     modifier presaleLive() {
-        require (block.timestamp > config.start && block.timestamp < config.end, "Campaign::presaleLive: presale not live");
+        require (!reseted && block.timestamp > config.start && block.timestamp < config.end, "Campaign::presaleLive: presale not live");
         _;
     }
 
@@ -125,7 +127,7 @@ contract Campaign is ICampaign, Ownable, Initializable {
     function getReservedTokens() external presaleEnded {
         uint256 reserved = reserved_tokens[msg.sender];
 
-        require (raised >= config.softCap, "Campaign::refund: softCap not reached");
+        require (raised >= config.softCap, "Campaign::getReservedTokens: softCap not reached");
         require (reserved > 0, "Campaign::getReservedTokens: user has no reserved tokens");
 
         delete reserved_tokens[msg.sender];
@@ -158,9 +160,12 @@ contract Campaign is ICampaign, Ownable, Initializable {
 
     function finishPresale() external presaleEnded onlyOwner {
         require (raised >= config.softCap, "Campaign::finishPresale: softCap not reached");
+        require (!finished,  "Campaign::finishPresale: already finished");
+
+        finished = true;
 
         uint256 platform_fee = fee * raised / MAX_PERCENT;
-        payable(address(factory)).transfer(platform_fee);
+        address(factory).call{value: platform_fee}("");
 
         uint256 raised_clear = raised - platform_fee;
         uint256 bnb_liq = raised_clear * config.liquidityPercent / MAX_PERCENT;
@@ -175,7 +180,6 @@ contract Campaign is ICampaign, Ownable, Initializable {
 
         // send remaining bnb to owner
         payable(owner()).transfer(address(this).balance);
-
         // send dust tokens, if any
         if (token_amount < config.liquidityTokens) {
             config.token.safeTransfer(owner(), config.liquidityTokens - token_amount);
