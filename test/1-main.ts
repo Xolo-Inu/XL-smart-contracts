@@ -181,9 +181,13 @@ describe('Xolo launchpad tests', async function() {
 
             await ethers.provider.send("evm_increaseTime", [24 * 3600]);
 
-            await expect(campaign.connect(alice).finishPresale()).to.be.revertedWith(
-              "Campaign::finishPresale: softCap not reached"
-            );
+            const tx = await campaign.connect(alice).finishPresale();
+
+            await expect(tx).to.not.emit(campaign, "LiquidityAdded");
+
+            const campaign_tokens = await token.balanceOf(campaign.address);
+
+            expect(campaign_tokens.toString()).to.be.eq('0');
 
             await expect(campaign.connect(bob).getReservedTokens()).to.be.revertedWith(
                 "Campaign::getReservedTokens: softCap not reached"
@@ -227,7 +231,8 @@ describe('Xolo launchpad tests', async function() {
             expect(bob_tokens.toString()).to.be.eq(reserved_tokens_before.toString());
 
             const raised = await campaign.raised();
-            await campaign.connect(alice).finishPresale();
+            const tx = await campaign.connect(alice).finishPresale();
+            await expect(tx).to.emit(campaign, "LiquidityAdded");
 
             const factory_bal = await ethers.provider.getBalance(factory.address);
             expect(factory_bal.toString()).to.be.eq((raised.mul(500).div(10000)).toString());
@@ -276,6 +281,13 @@ describe('Xolo launchpad tests', async function() {
 
             await campaign.connect(alice).unlockLiquidity();
 
+        });
+
+        it('Collect fee', async function() {
+           await factory.connect(admin).withdraw();
+
+           const bal = await ethers.provider.getBalance(factory.address);
+           expect(bal.toString()).to.be.eq('0');
         });
     });
 

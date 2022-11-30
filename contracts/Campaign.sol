@@ -160,45 +160,51 @@ contract Campaign is ICampaign, Ownable, Initializable {
     }
 
     function finishPresale() external presaleEnded onlyOwner {
-        require (raised >= config.softCap, "Campaign::finishPresale: softCap not reached");
         require (!finished,  "Campaign::finishPresale: already finished");
 
         finished = true;
 
-        uint256 platform_fee = fee * raised / MAX_PERCENT;
-        address(factory).call{value: platform_fee}("");
-
-        uint256 raised_clear = raised - platform_fee;
-        uint256 bnb_liq = raised_clear * config.liquidityPercent / MAX_PERCENT;
-
-        config.token.approve(address(router), config.liquidityTokens);
-        // add liquidity without any conditions
-        (
-            uint token_amount,
-            uint bnb_amount,
-            uint liquidity
-        ) = router.addLiquidityETH{value: bnb_liq}(address(config.token), config.liquidityTokens, 0, 0, address(this), block.timestamp);
-
-        // send remaining bnb to owner
-        payable(owner()).transfer(address(this).balance);
-        // send dust tokens, if any
-        if (token_amount < config.liquidityTokens) {
-            config.token.safeTransfer(owner(), config.liquidityTokens - token_amount);
-        }
-
-        // set lock interval for liquidity
-        lp_lock_until = uint32(block.timestamp) + config.liquidityLockupPeriod;
-
-        uint256 unsoldTokens = config.presaleTokens - tokens_sold;
-        if (unsoldTokens > 0) {
-            if (config.action == UnsoldTokensAction.burn) {
-                config.token.safeTransfer(BURN, unsoldTokens);
-            } else {
-                config.token.safeTransfer(owner(), unsoldTokens);
+        if (raised < config.softCap) {
+            uint256 token_balance = config.token.balanceOf(address(this));
+            if (token_balance > 0) {
+                config.token.safeTransfer(owner(), token_balance);
             }
-        }
+        } else {
+            uint256 platform_fee = fee * raised / MAX_PERCENT;
+            address(factory).call{value: platform_fee}("");
 
-        emit LiquidityAdded(bnb_amount, token_amount, liquidity, lp_lock_until);
+            uint256 raised_clear = raised - platform_fee;
+            uint256 bnb_liq = raised_clear * config.liquidityPercent / MAX_PERCENT;
+
+            config.token.approve(address(router), config.liquidityTokens);
+            // add liquidity without any conditions
+            (
+                uint token_amount,
+                uint bnb_amount,
+                uint liquidity
+            ) = router.addLiquidityETH{value: bnb_liq}(address(config.token), config.liquidityTokens, 0, 0, address(this), block.timestamp);
+
+            // send remaining bnb to owner
+            payable(owner()).transfer(address(this).balance);
+            // send dust tokens, if any
+            if (token_amount < config.liquidityTokens) {
+                config.token.safeTransfer(owner(), config.liquidityTokens - token_amount);
+            }
+
+            // set lock interval for liquidity
+            lp_lock_until = uint32(block.timestamp) + config.liquidityLockupPeriod;
+
+            uint256 unsoldTokens = config.presaleTokens - tokens_sold;
+            if (unsoldTokens > 0) {
+                if (config.action == UnsoldTokensAction.burn) {
+                    config.token.safeTransfer(BURN, unsoldTokens);
+                } else {
+                    config.token.safeTransfer(owner(), unsoldTokens);
+                }
+            }
+
+            emit LiquidityAdded(bnb_amount, token_amount, liquidity, lp_lock_until);
+        }
     }
 
     function unlockLiquidity() external onlyOwner {
