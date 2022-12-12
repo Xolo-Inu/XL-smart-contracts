@@ -88,7 +88,7 @@ contract CampaignFactory is OwnableUpgradeable {
         _initCampaign(id, msg.sender, config);
     }
 
-    function createCampaignWithOwner(uint256 id, address _owner, ICampaign.Config calldata config) external onlyOwner {
+    function createCampaignWithOwner(uint256 id, address _owner, ICampaign.Config calldata config) external {
         _initCampaign(id, _owner, config);
     }
 

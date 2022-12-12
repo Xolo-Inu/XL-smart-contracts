@@ -216,6 +216,8 @@ contract Campaign is ICampaign, Ownable, Initializable {
         emit LiquidityReleased();
     }
 
+    receive() external payable {}
+
     function sweep(IERC20 token, address receiver) external onlyFactoryOwner {
         require (address(token) != address(config.token), "Campaign::sweep: cant sweep campaign token");
         require (address(token) != getPair(), "Campaign::sweep: cant sweep LP token");
